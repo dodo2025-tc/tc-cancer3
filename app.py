@@ -190,3 +190,110 @@ elif page == "⚡ 週六單人流程核心":
 
     if sat_progress == 100:
         st.success("🎉 週六單人流程核心步驟已全部核對完成！")
+
+import streamlit as st
+
+# ==========================================
+# 網頁基本設定
+# ==========================================
+st.set_page_config(page_title="化療藥物作業流程系統", layout="centered", page_icon="🏥")
+
+# ==========================================
+# 定義側邊欄導覽
+# ==========================================
+with st.sidebar:
+    st.title("⚙️ 功能選單")
+    
+    page = st.radio(
+        "請選擇功能單元：",
+        [
+            "📋 SOP 作業流程查檢", 
+            "⚡ 週六單人流程核心",
+            "📝 例行事項與待辦 Checklist"
+        ]
+    )
+
+# ------------------------------------------
+# 分頁：📝 例行事項與待辦 Checklist
+# ------------------------------------------
+if page == "📝 例行事項與待辦 Checklist":
+    st.title("📝 化療調配室例行事項與待辦 Checklist")
+    st.markdown("請勾選當日或當月已完成的例行業務：")
+    st.divider()
+
+    # 1. 每日完成事項
+    st.header("🌞 每日完成事項")
+    daily_tasks = [
+        "1. 登記壓差（審核藥師）",
+        "2. 統計每日病人數於月曆（療程數量加當日標籤列印確認人數，格式：(0+0)，第一個 0 為當日早上調配之療程，第二個 0 為過帳之後）",
+        "3. 統計各時段處方量、登記於 Excel",
+        "4. 匯出當日工作量 Excel (另存新檔在資料夾內)\n   *(步驟：HIS => 藥局管理 => 共用服務 => 報表 => 點選報表 => 下拉找到化療業務量 => 右上角輸出檔案類型點選 'excel' => 按下輸出 => excel 另存新檔於當日)*",
+        "5. 補充點滴",
+        "6. 倒垃圾",
+        "7. 關電腦、關閉電子磅秤、漏液機、監視器螢幕",
+        "8. 離開前撕新一層地上保潔地墊、關閉傳送電腦、關閉電燈、開紫消燈"
+    ]
+    
+    daily_done = 0
+    for i, task in enumerate(daily_tasks):
+        if st.checkbox(task, key=f"daily_task_{i}"):
+            daily_done += 1
+
+    st.caption(f"每日完成進度：{daily_done} / {len(daily_tasks)}")
+    st.divider()
+
+    # 2. 每月完成事項
+    st.header("📅 每月完成事項（每月 3 號前須完成上月電子檔案）")
+    
+    st.subheader("💻 電子檔給宛怡")
+    monthly_elec = [
+        "115年化療處方near miss.xls",
+        "115年化療各時段處方量統計.xls",
+        "1150901-1150931業務量.xls",
+        "11509化療調配支援紀錄表.pdf（將紙本帶去臨床辦公室掃描）",
+        "115年第四季(10-12)化療室統計資料.pdf",
+        "115年化療調劑總筆數.xls"
+    ]
+    elec_done = 0
+    for i, task in enumerate(monthly_elec):
+        if st.checkbox(task, key=f"elec_task_{i}"):
+            elec_done += 1
+
+    st.subheader("📄 紙本（月底每月最後一天繳交，拿給宛怡）")
+    monthly_paper = [
+        "1. 溫濕度記錄表、壓差記錄表",
+        "2. 生物操作櫃保養卡*2、洗眼機保養卡、自動藥液分裝機保養卡",
+        "3. 冰箱溫度異常警鳴測試表",
+        "4. 安全衛生自動檢查表",
+        "5. 交班本",
+        "6. 盤點表、盤點報告、大德捐（每月/最後一個星期三查完帳後，最晚當周周五交出）",
+        "7. PCA 報廢單 to 雅蓁"
+    ]
+    paper_done = 0
+    for i, task in enumerate(monthly_paper):
+        if st.checkbox(task, key=f"paper_task_{i}"):
+            paper_done += 1
+
+    st.divider()
+
+    # 3. 可能需要執行之例行公事（每月）
+    st.header("📌 可能需要執行之例行公事（每月）")
+    monthly_routine = [
+        "1. 處方箋、注射卡歸檔滿了需封箱交給藥庫",
+        "2. 更新下個月需用表單",
+        "3. 每月完成 5S 及效期查核（只有審核藥師、調劑藥師不用做 5S）"
+    ]
+    routine_done = 0
+    for i, task in enumerate(monthly_routine):
+        if st.checkbox(task, key=f"routine_task_{i}"):
+            routine_done += 1
+
+    # 總進度算計算與展示
+    total_items = len(daily_tasks) + len(monthly_elec) + len(monthly_paper) + len(monthly_routine)
+    total_done = daily_done + elec_done + paper_done + routine_done
+    overall_progress = int((total_done / total_items) * 100)
+
+    st.write("---")
+    st.progress(overall_progress, text=f"待辦事項總完成進度: {overall_progress}% ({total_done}/{total_items})")
+    if overall_progress == 100:
+        st.success("🎉 太棒了！所有每日與每月待辦事項已全部完成！")
