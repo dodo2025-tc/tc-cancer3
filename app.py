@@ -571,7 +571,7 @@ elif page == "📦 醫療物資請領清單":
   tab1, tab2, tab3, tab4, tab5 = st.tabs([
       "盤點(庫存品)",
       "盤點(單一品項)",
-      "調撥領用西藥 (出庫請點441 請領點541)",
+      "藥品+點滴+酒精",
       "一般品項",
       "盤點撥補ZZ",
   ])
@@ -595,7 +595,7 @@ elif page == "📦 醫療物資請領清單":
   with tab1:
     st.subheader("📦 盤點撥補醫材 (庫存品) - 勾選區")
 
-    # 新增的操作步驟流程說明
+    # 操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選庫存品 ➔ 新增"
@@ -621,7 +621,7 @@ elif page == "📦 醫療物資請領清單":
   with tab2:
     st.subheader("📦 盤點撥補醫材 (單一品項) - 勾選區")
 
-    # 新增的操作步驟流程說明
+    # 操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選單一品項 ➔ 新增"
@@ -643,9 +643,16 @@ elif page == "📦 醫療物資請領清單":
     else:
       st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 3：調撥領用西藥 ---
+  # --- 分頁 3：藥品+點滴+酒精 ---
   with tab3:
-    st.subheader("💊 調撥領用西藥 (出庫請點441 請領點541) - 勾選區")
+    st.subheader("💊 藥品+點滴+酒精 - 勾選區")
+
+    # 新增的操作步驟流程說明
+    st.info(
+        "📌 **操作步驟流程說明：**\n\n"
+        "庫存類表單 ➔ 調撥領用申請 ➔ 中分類西藥 ➔ 發料庫441 ➔ 請領庫541 ➔ 分機4035 ➔ 新增"
+    )
+
     selected_records_p3 = []
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page2):
@@ -654,11 +661,11 @@ elif page == "📦 醫療物資請領清單":
           selected_records_p3.append((col1_val, col2_val, code, name))
 
     st.markdown("---")
-    st.subheader("📋 調撥領用西藥產生的清單")
+    st.subheader("📋 藥品+點滴+酒精產生的清單")
     if selected_records_p3:
       df_p3 = pd.DataFrame(selected_records_p3)
       st.dataframe(df_p3, use_container_width=True, hide_index=True)
-      get_excel_download_button(df_p3, "調撥領用西藥")
+      get_excel_download_button(df_p3, "藥品_點滴_酒精")
     else:
       st.info("👆 請在上方勾選項目。")
 
