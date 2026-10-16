@@ -594,6 +594,13 @@ elif page == "📦 醫療物資請領清單":
   # --- 分頁 1：盤點(庫存品) ---
   with tab1:
     st.subheader("📦 盤點撥補醫材 (庫存品) - 勾選區")
+
+    # 新增的操作步驟流程說明
+    st.info(
+        "📌 **操作步驟流程說明：**\n\n"
+        "庫存類表單 ➔ 常備盤點作業 ➔ 中分類醫材 ➔ 選庫存品 ➔ 新增"
+    )
+
     selected_records_p1 = []
     cols = st.columns(2)
     for i, (source, code, name) in enumerate(items_data_page1_stock):
