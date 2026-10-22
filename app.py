@@ -1,5 +1,6 @@
 from datetime import datetime
 from io import BytesIO
+from docx import Document  # 用於生成 Word 文件
 import pandas as pd
 import streamlit as st
 
@@ -740,7 +741,8 @@ elif page == "📦 醫療物資請領清單":
 elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
   st.markdown(
-      "請輸入病歷號後三碼，選擇照會範本，並可在下方直接貼上或修改相關資料後下載 Excel！"
+      "請輸入病歷號後三碼，選擇照會範本，並可在下方直接貼上或修改相關資料後下載 Excel"
+      " 或 Word！"
   )
   st.divider()
 
@@ -877,38 +879,68 @@ elif page == "📑 多團隊照會清單":
       "5. 請貼上該區間住院用藥", placeholder="在此處貼上住院用藥...", height=100
   )
 
-  # 4. 產生 Excel 並提供下載
+  # 4. 準備檔名用的末三碼
   suffix_str = chart_no_suffix if chart_no_suffix else "未填"
 
   if not chart_no_suffix:
     st.warning("💡 提醒：您尚未輸入病歷號後三碼，檔名將以「未填」代替。")
 
-  # 將網頁上填寫的內容組合成 Excel 資料格式（橫向欄位）
-  excel_data_dict = {
-      "病歷號後三碼": [suffix_str],
-      "選定範本項目": [selected_template_key],
-      "1. 照會範本內容": [edited_template],
-      "2. 歷次看診之主觀與客觀描述": [input_subjective],
-      "3. 該次化療藥物清單": [input_chemo_drug],
-      "4. 該次血液or檢驗相關報告": [input_lab_report],
-      "5. 該區間住院用藥": [input_inpatient_med],
-  }
-
-  df_consult = pd.DataFrame(excel_data_dict)
-
-  # 輸出為 Excel 位元組
-  output = BytesIO()
-  with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    df_consult.to_excel(writer, index=False, sheet_name="多團隊照會清單")
-  excel_data = output.getvalue()
-
   st.divider()
 
-  # 下載按鈕 (檔名改為僅帶入末三碼與時間戳記)
+  # 建立橫向多欄位的 DataFrame (確保每一欄都有獨立的標題與內容清單)
+  df_consult = pd.DataFrame(
+      {
+          "病歷號後三碼": [suffix_str],
+          "選定範本項目": [selected_template_key],
+          "1. 照會範本內容": [edited_template],
+          "2. 歷次看診之主觀與客觀描述": [input_subjective],
+          "3. 該次化療藥物清單": [input_chemo_drug],
+          "4. 該次血液or檢驗相關報告": [input_lab_report],
+          "5. 該區間住院用藥": [input_inpatient_med],
+      }
+  )
+
+  # 預覽表格外觀
+  st.dataframe(df_consult, use_container_width=True, hide_index=True)
+
+  # --- A. 產生 Excel 下載按鈕 ---
+  excel_output = BytesIO()
+  with pd.ExcelWriter(excel_output, engine="openpyxl") as writer:
+    df_consult.to_excel(writer, index=False, sheet_name="多團隊照會清單")
+  excel_data = excel_output.getvalue()
+
   st.download_button(
-      label=f"📥 下載 Excel 照會檔 (病歷號末三碼: {suffix_str})",
+      label=f"📥 下載 Excel 照會檔 ({suffix_str}.xlsx)",
       data=excel_data,
-      file_name=f"{suffix_str}_{datetime.now().strftime('%H%M%S')}.xlsx",
+      file_name=f"{suffix_str}.xlsx",
       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       type="primary",
+  )
+
+  # --- B. 產生 Word 下載按鈕 ---
+  doc = Document()
+  doc.add_heading(f"多團隊照會清單 (病歷號末三碼: {suffix_str})", level=1)
+  doc.add_paragraph(f"選定範本項目: {selected_template_key}")
+  doc.add_heading("1. 照會範本內容", level=2)
+  doc.add_paragraph(edited_template)
+  doc.add_heading("2. 歷次看診之主觀與客觀描述", level=2)
+  doc.add_paragraph(input_subjective)
+  doc.add_heading("3. 該次化療藥物清單", level=2)
+  doc.add_paragraph(input_chemo_drug)
+  doc.add_heading("4. 該次血液or檢驗相關報告", level=2)
+  doc.add_paragraph(input_lab_report)
+  doc.add_heading("5. 該區間住院用藥", level=2)
+  doc.add_paragraph(input_inpatient_med)
+
+  word_output = BytesIO()
+  doc.save(word_output)
+  word_data = word_output.getvalue()
+
+  st.download_button(
+      label=f"📥 下載 Word 照會檔 ({suffix_str}.docx)",
+      data=word_data,
+      file_name=f"{suffix_str}.docx",
+      mime=(
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ),
   )
