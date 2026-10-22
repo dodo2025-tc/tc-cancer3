@@ -678,7 +678,7 @@ elif page == "📦 醫療物資請領清單":
 elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
   st.markdown(
-      "請輸入病歷號後三碼，選擇照會範本，並可在下方直接貼上或修改相關資料後下載 Excel"
+      "請輸入病歷號後三碼，選擇照會範本，並依據欄位提示路徑貼上資料後下載 Excel"
       " 或 Word！"
   )
   st.divider()
@@ -786,9 +786,9 @@ elif page == "📑 多團隊照會清單":
       "📂 請選擇需要的照會範本：", list(consult_templates.keys())
   )
 
-  # 3. 網頁上的輸入與貼上欄位 (更新標題名稱)
+  # 3. 網頁上的輸入與貼上欄位 (更新為帶有具體路徑指引的名稱)
   st.subheader("📝 資料填寫與貼上區")
-  st.markdown("請直接在下方各欄位中貼上或修改對應的病歷與臨床資料：")
+  st.markdown("請依照各欄位提示的操作路徑，將對應資料貼至下方：")
 
   edited_template = st.text_area(
       "1. 我是範本我是範本",
@@ -796,17 +796,26 @@ elif page == "📑 多團隊照會清單":
       height=150,
   )
   input_subjective = st.text_area(
-      "2. 請貼上歷次看診之主觀與客觀描述 (我是此次照會對象)",
+      (
+          "2. 請貼上歷次看診之主觀與客觀描述 (我是此次照會對象)\n"
+          "📌【操作路徑】：彙整病例 ➔ 歷次看診 ➔ 最接近一次 ➔ 主客觀"
+      ),
       placeholder="在此處貼上主觀與客觀描述...",
       height=100,
   )
   input_chemo_drug = st.text_area(
-      "3. 請貼上該次化療藥物清單 (我是此次照會對象)",
+      (
+          "3. 請貼上該次化療藥物清單 (我是此次照會對象)\n"
+          "📌【操作路徑】：彙整病例 ➔ 化療 ➔ 該次處方明細 ➔ 下方複製貼上"
+      ),
       placeholder="在此處貼上化療藥物清單...",
       height=100,
   )
   input_lab_report = st.text_area(
-      "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象)",
+      (
+          "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象)\n"
+          "📌【操作路徑】：彙整病例 ➔ 檢驗 ➔ 最近兩期血液血球檢查打勾 ➔ 複製到剪貼簿"
+      ),
       placeholder="在此處貼上檢驗報告...",
       height=100,
   )
@@ -828,10 +837,19 @@ elif page == "📑 多團隊照會清單":
       "病歷號後三碼": [suffix_str],
       "選定範本項目": [selected_template_key],
       "1. 我是範本我是範本": [edited_template],
-      "2. 歷次看診之主觀與客觀描述 (我是此次照會對象)": [input_subjective],
-      "3. 該次化療藥物清單 (我是此次照會對象)": [input_chemo_drug],
-      "4. 該次血液or檢驗相關報告 (我是此次照會對象)": [input_lab_report],
-      "5. 該區間住院用藥 (我是此次照會對象)": [input_inpatient_med],
+      (
+          "2. 請貼上歷次看診之主觀與客觀描述 (我是此次照會對象) "
+          "[路徑: 彙整病例->歷次看診->最接近一次->主客觀]"
+      ): [input_subjective],
+      (
+          "3. 請貼上該次化療藥物清單 (我是此次照會對象) "
+          "[路徑: 彙整病例->化療->該次處方明細->下方複製貼上]"
+      ): [input_chemo_drug],
+      (
+          "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象) "
+          "[路徑: 彙整病例->檢驗->最近兩期血液血球檢查打勾->複製到剪貼簿]"
+      ): [input_lab_report],
+      "5. 請貼上該區間住院用藥 (我是此次照會對象)": [input_inpatient_med],
   })
 
   # 預覽表格外觀
@@ -851,7 +869,7 @@ elif page == "📑 多團隊照會清單":
       type="primary",
   )
 
-  # --- B. 產生 Word 下載 (完整涵蓋所有 5 個欄位資料) ---
+  # --- B. 產生 Word 下載 ---
   if HAS_DOCX:
     doc = Document()
     doc.add_heading(f"多團隊照會清單 (病歷號末三碼: {suffix_str})", level=1)
@@ -860,16 +878,30 @@ elif page == "📑 多團隊照會清單":
     doc.add_heading("1. 我是範本我是範本", level=2)
     doc.add_paragraph(edited_template if edited_template else "（無內容）")
 
-    doc.add_heading("2. 歷次看診之主觀與客觀描述 (我是此次照會對象)", level=2)
+    doc.add_heading(
+        "2. 請貼上歷次看診之主觀與客觀描述 (我是此次照會對象)\n[路徑:"
+        " 彙整病例->歷次看診->最接近一次->主客觀]",
+        level=2,
+    )
     doc.add_paragraph(input_subjective if input_subjective else "（無內容）")
 
-    doc.add_heading("3. 該次化療藥物清單 (我是此次照會對象)", level=2)
+    doc.add_heading(
+        "3. 請貼上該次化療藥物清單 (我是此次照會對象)\n[路徑:"
+        " 彙整病例->化療->該次處方明細->下方複製貼上]",
+        level=2,
+    )
     doc.add_paragraph(input_chemo_drug if input_chemo_drug else "（無內容）")
 
-    doc.add_heading("4. 該次血液or檢驗相關報告 (我是此次照會對象)", level=2)
+    doc.add_heading(
+        "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象)\n[路徑:"
+        " 彙整病例->檢驗->最近兩期血液血球檢查打勾->複製到剪貼簿]",
+        level=2,
+    )
     doc.add_paragraph(input_lab_report if input_lab_report else "（無內容）")
 
-    doc.add_heading("5. 該區間住院用藥 (我是此次照會對象)", level=2)
+    doc.add_heading(
+        "5. 請貼上該區間住院用藥 (我是此次照會對象)", level=2
+    )
     doc.add_paragraph(input_inpatient_med if input_inpatient_med else "（無內容）")
 
     word_output = BytesIO()
