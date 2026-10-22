@@ -735,3 +735,156 @@ elif page == "📦 醫療物資請領清單":
       get_excel_download_button(df_all, "全部勾選總表")
     else:
       st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
+# ==========================================
+# 5. 多團隊照會清單 (新增的第五個功能)
+# ==========================================
+elif page == "📦 多團隊照會清單":
+  st.title("📋 多團隊照會清單產生器")
+  st.markdown("請選擇對應的照會範本，並輸入病歷號後三碼以產生並下載 Excel 檔案。")
+  st.divider()
+
+  # 1. 輸入病歷號末三碼
+  chart_no_suffix = st.text_input(
+      "🔑 請輸入病歷號【後三碼】：", max_chars=3, placeholder="例如：123"
+  )
+
+  # 2. 12個照會範本字典資料庫
+  consult_templates = {
+      "1. 營養不良範本": (
+          "病人經診斷為Recurrence mouth flood"
+          " rypT4aN2cM0, stage IVB，且於2024/02/02用Cetuximab治療。\n"
+          "病人於2024/02/05追蹤時反映食慾不振：G3：嚴重體重喪失或營養不良，需管道餵食或施打...，Cetuximab：Decrease"
+          " in appetite (27% )。\n"
+          "2/5開立自費胺基酸補充Alanyl Glutamine 20gm/100mL/bot"
+          " (Dipeptiven)自費胺基酸補充，續觀察。"
+      ),
+      "2. 白血球低下範本": (
+          "病人經診斷為D-colon cancer, with mesentery, paraaortic and"
+          " interaortocaval spaces, and bilateral common iliac chains,"
+          " pT4N2bM1c, stage"
+          " IV，且於2024/02/01用Avastin、Irino、Fluorouracil治療，病人於2024/02/16追蹤時發現有白血球低下(WBC:1.28*10^3/uL)的症狀，醫師評估後懷疑為藥品所造成之不良反應，故使用Lenograstim"
+          " 250ug ST SC(2024/2/16-2/17)治療並持續追蹤，2024/2/19的Lab"
+          " data:WBC：7.9*10^3/uL，不良反應症狀消失。"
+      ),
+      "3. 血小板低下範本": (
+          "病人經診斷為Bladder"
+          " cancer，且於2024/07/01用Paclitaxel治療，病人於2024/07/16追蹤時發現有血小板低下[G3：25000-50000/mm3]的症狀，醫師評估後懷疑為藥品所造成之不良反應，故輸血LPRBC"
+          " 2units (2024/07/16)治療,2024/07/22的Lab"
+          " data:PLT:397*10^3/uL不良反應症狀消失。\n依據Micromedex，Paclitaxel：thrombocytopenia"
+          " , Any grade (4% to 68% )"
+      ),
+      "4. 掉髮範本": (
+          "病人經診斷為Endometrioid adenocarcinoma,Ovary, bilateral,pT2aN0.stage"
+          " IIa，且於2024/01/30-31用Paclitaxel、Carboplatin治療。病人於2024/2/27追蹤時反映主訴掉髮[G3：全身體毛掉落]。依據Micromedex，Paclitaxel:"
+          " Alopecia (55% to 96% )、CarboplatinAlopecia (2% to"
+          " 50% )，續觀。"
+      ),
+      "5. 感覺神經異常範本": (
+          "病患因診斷有R`t high grade serous ovarian carcinoma，112.12.08右側人工血管放置，並於當日接受第一次化學藥物治療，醫囑方案：Paciltaxel(175mg/m2)+Carboplatin(AUC"
+          " 5)，當次完成治療出院返家後，病患開始出現虛弱、食慾差與明顯四肢麻木現象。113.01.08返回門診追蹤時與醫師告知，醫師評估後考量為藥物之不良反應，採支持療法，協助會診中醫，與家屬討論後決議採中醫合併療法，1/8接受第二次化學藥物治療、1/9病患完成治療療程，因無出現不良反應，醫囑安排出院，門診追蹤。\n\n依據現用藥物仿單，神經毒性不良反應發生率如下：\nPaclitaxel：peripheral"
+          " neuropathy (42% to 70%; grades 3/4: ≤7%)\nCarboplatin：peripheral"
+          " neuropathy (4% to"
+          " 6%)\n→其中特別針對Paclitaxel神經毒性的發生率與嗜中性白血球減少症的嚴重程度與劑量相關，建議如發生嚴重嗜中性白血球減少症(<0.5x109"
+          " cells/L)或嚴重週邊神經炎的患者必須在接續的療程降低20%的劑量。"
+      ),
+      "6. 白血球&血色素&血小板低下範本": (
+          "病人經診斷為 Ph+ acute lymphoblastic leukemia, BCR-ABL p190(+) CR，且於2024/2/21-23用"
+          " Methotrexate、Cytarabine治療，病人於2024/2/28追蹤時發現有白血球低下(WBC:0.74*10^3/uL)血色素低下(HGB:7.0"
+          " g/dl)、血小板低下(PLT:92*10^3/uL)的症狀，醫師評估後懷疑為藥品所造成之不良反應，故使用Lenograstim 250ug QD"
+          " SC(2024/2/28-3/5)治療與輸血並持續追蹤，2024/3/5的Lab"
+          " data:WBC：4.13*10^3/uL、HGB:9.1 g/dl，2024/3/11"
+          " PLT:198*10^3/uL不良反應症狀消失"
+      ),
+      "7. 血色素低下範本": (
+          "病人經診斷為 Cervical cancer stage I，用Weekly cisplatin 40mg/m2"
+          " 治療，病人於2024/04/08追蹤時發現有血紅素過低(HGB:9.1g/dL)的症狀，醫師評估後懷疑為cisplatin產生之症狀，因藥物可能產生輕微骨髓抑制，且通常在停止治療後可逆，故建議添加B12，鐵劑等症狀緩解藥物，2024/04/09的Lab"
+          " data:HGB:7.5g/dL，續觀。"
+      ),
+      "8. ANC低下範本": (
+          "病人經診斷為Gastric cancer with Serosa invasion，且於2024/6/19用Nivo"
+          " FOLFOX+IP regimen: Nivolumab、Oxaliplatin、Fluorouracil、Paclitaxel治療，病人於2024/07/05追蹤時發現有ANC低下(ANC:154/uL)的症狀，醫師評估後懷疑為藥品所造成之不良反應，故使用Lenograstim"
+          " 250ug ST SC(2024/07/05-07)治療並持續追蹤，2024/7/12的Lab data:ANC"
+          " 3007/uL，不良反應症狀消失。"
+      ),
+      "9. 口腔炎&血小板低下範本": (
+          "病人經診斷為Nasopharyngeal carcinoma cT4N0M0, stageIVA (EVB-DNA:91"
+          " IU/ml)，實行Weekly CDDP治療計畫，且於2024/07/02用Cisplatin治療。病人於2024/07/22追蹤時反映口腔炎[G3:嚴重疼痛,"
+          " 影響經口吞食]、血小板低下[G3：25000-50000/mm3](PLT:48*10^3/uL)的症狀。醫師評估後懷疑為藥品所造成之不良反應，故開立Megestrol"
+          " Oral Suspension 40mg/mL,120mL/bot (Megest) 10ml QD PO與Bfluid"
+          " 1000mL/bag (Glucose 75gm & Amino acid 30gm & Total nitrogen"
+          " 4.7gm/bag) 1000ml QD IVD,與Smoflipid 20% (250mL/btl), Nephrosteril"
+          " 7% 治療，並鼻胃管灌食 NG diet 1600 Kcal/day。於2024/07/25輸血L-PRBC，續觀。\n開立Betamethasone"
+          " 乳膏 0.06% 5gm/tube (Rinderon-V)用於neck radiation dermatitisNystatin 水劑"
+          " 2.4MU/24mL/bot、Neomycin 250 mg/cap與Morphine 15mg/tab混合後漱口使用於口腔黏膜炎，續觀。"
+      ),
+      "10. 口腔炎範本": (
+          "病人經診斷為Left tongue cancer cT3N2cM0 stageIVA  s/p pT4aN2cM0"
+          " stageIVA，實行Weekly CDDP治療計畫，於2024/6/28施打 Cisplatin，於2024/7/24追蹤時仍反映口腔黏膜炎[G3：重度疼痛；不可吃]的症狀。醫師評估後懷疑為藥品所造成之不良反應，故繼續使用止痛藥物Morphine"
+          " 15mg 1.5 tab PO"
+          " Q6H、口腔止痛漱口水，並放置鼻胃管灌食NG diet 1800"
+          " Kcal/day，衛教病人加強口腔衛生(舌苔多)，仍延後第6次化學治療(鉑金)並持續追蹤。"
+      ),
+      "11. 血小板低下範本(2)": (
+          "病人經診斷為Nasopharyngeal carcinoma cT4N0M0, stageIVA (EVB-DNA:91"
+          " IU/ml)，於2024/06/05用Cisplatin 50mg/50mL/vial(Kemoplat) 74mg IVD"
+          " ST治療，病人於2024/05//20追蹤時發現有血小板低下[G4：＜"
+          " 25000/mm3](PLT:5*10^3/uL)的症狀，醫師評估後懷疑為藥品所造成之不良反應，故輸血LRPRBC 2U and LRPh"
+          " 2U(2024/05/20)治療，2024/05/24的Lab data:PLT：58*10^3/uL，不良反應症狀減輕，2024/05/27再次發生血小板低下[G4：＜"
+          " 25000/mm3](PLT:11*10^3/uL)，輸血治療LRP"
+          " 2U(2024/05/27-28)並持續追蹤。\n依據Micromedex，Decitabine：thrombocytopenia"
+          " (27% to 89%; grades 3/4: 85%)"
+      ),
+      "12. 呼吸困難範本": (
+          "病人經診斷為Recurrent buccogingival cancer rcT4N0M0，於2024/05/02-2024/05/04使用"
+          " Cetuximab 100mg/20mL/vial(Erbitux) 771mg IVD ST + Cisplatin"
+          " 50mg/50mL/vial(Kemoplat) 77 mg IVD ST + Fluorouracil"
+          " 1000mg/20mL/vial(5-Fu) 1928mg IVD ST+QD治療。病人於2024/05/06住院觀察時發生咳嗽[G3:嚴重症狀;日常生活活動(ADL)受限]、呼吸困難[G4:危及生命，需緊急介入治療]等狀況，醫師評估後懷疑為化療藥品引起之不良反應(Cetuximab:Dyspnea"
+          " (Colorectal cancer, 49% ))，使用氧氣面罩治療，CXR檢查結果顯示RLL浸潤，給予Tapimycin"
+          " 4500mg Q8H IVD治療，後個案簽囑DNR並於2024/05/06下午出院返家。"
+      ),
+  }
+
+  selected_template_key = st.selectbox(
+      "📂 請選擇需要的照會範本：", list(consult_templates.keys())
+  )
+
+  # 3. 內容預覽與編輯區
+  st.subheader("📝 照會內容預覽與微調")
+  edited_content = st.text_area(
+      "您可以直接在下方修改文字內容後再下載：",
+      value=consult_templates[selected_template_key],
+      height=200,
+  )
+
+  # 4. 產生 Excel 並提供下載
+  if st.button("📥 產生並下載 Excel 照會檔", type="primary"):
+    if not chart_no_suffix:
+      st.warning("⚠️ 提醒：您尚未輸入病歷號後三碼，檔名將以「未填」代替。")
+      suffix_str = "未填"
+    else:
+      suffix_str = chart_no_suffix
+
+    # 製作成 DataFrame 格式供 Excel 匯出
+    df_consult = pd.DataFrame(
+        {
+            "病歷號後三碼": [suffix_str],
+            "範本項目": [selected_template_key],
+            "照會內容": [edited_content],
+        }
+    )
+
+    # 輸出為 Excel 位元組
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine="openpyxl") as writer:
+      df_consult.to_excel(writer, index=False, sheet_name="多團隊照會")
+    excel_data = output.getvalue()
+
+    # 下載按鈕
+    st.download_button(
+        label=f"💾 點選下載檔案 (末三碼: {suffix_str})",
+        data=excel_data,
+        file_name=f"多團隊照會_末三碼{suffix_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+        mime=(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ),
+    )
