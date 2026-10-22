@@ -28,7 +28,7 @@ st.markdown(
 with st.sidebar:
   st.title("⚙️ 功能選單")
 
-  # 新增「📦 醫療物資請領清單」主選項
+  # 新增第 5 個「📑 多團隊照會清單」選項
   page = st.radio(
       "請選擇功能單元：",
       [
@@ -731,17 +731,18 @@ elif page == "📦 醫療物資請領清單":
 
     if all_selected_records:
       df_all = pd.DataFrame(all_selected_records)
-      # 調整高度 (height=600)，讓表格變大、不需要額外下滑捲動就能輕鬆複製
       st.dataframe(df_all, use_container_width=True, hide_index=True, height=600)
       get_excel_download_button(df_all, "全部勾選總表")
     else:
       st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
-# ==========================================
+
 # 5. 多團隊照會清單 (新增的第五個功能)
-# ==========================================
-elif page == "📦 多團隊照會清單":
+elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
-  st.markdown("請選擇對應的照會範本，並輸入病歷號後三碼以產生並下載 Excel 檔案。")
+  st.markdown(
+      "請輸入病歷號後三碼，選擇對應的照會範本，確認或修改內容後即可下載"
+      " Excel 檔案。"
+  )
   st.divider()
 
   # 1. 輸入病歷號末三碼
@@ -820,7 +821,7 @@ elif page == "📦 多團隊照會清單":
       ),
       "10. 口腔炎範本": (
           "病人經診斷為Left tongue cancer cT3N2cM0 stageIVA  s/p pT4aN2cM0"
-          " stageIVA，實行Weekly CDDP治療計畫，於2024/6/28施打 Cisplatin，於2024/7/24追蹤時仍反映口腔黏膜炎[G3：重度疼痛；不可吃]的症狀。醫師評估後懷疑為藥品所造成之不良反應，故繼續使用止痛藥物Morphine"
+          " stageIVA，實行Weekly CDDP治療計畫，於2024/6/28施打 Cisplatin，於2024/7/24追蹤時仍反映口腔黏膜炎[G3：重度疼痛；不可吃]的症狀。醫師評估後懷疑為藥品所造成之不良反应，故繼續使用止痛藥物Morphine"
           " 15mg 1.5 tab PO"
           " Q6H、口腔止痛漱口水，並放置鼻胃管灌食NG diet 1800"
           " Kcal/day，衛教病人加強口腔衛生(舌苔多)，仍延後第6次化學治療(鉑金)並持續追蹤。"
@@ -858,34 +859,31 @@ elif page == "📦 多團隊照會清單":
   )
 
   # 4. 產生 Excel 並提供下載
-  if st.button("📥 產生並下載 Excel 照會檔", type="primary"):
-    if not chart_no_suffix:
-      st.warning("⚠️ 提醒：您尚未輸入病歷號後三碼，檔名將以「未填」代替。")
-      suffix_str = "未填"
-    else:
-      suffix_str = chart_no_suffix
+  suffix_str = chart_no_suffix if chart_no_suffix else "未填"
 
-    # 製作成 DataFrame 格式供 Excel 匯出
-    df_consult = pd.DataFrame(
-        {
-            "病歷號後三碼": [suffix_str],
-            "範本項目": [selected_template_key],
-            "照會內容": [edited_content],
-        }
-    )
+  if not chart_no_suffix:
+    st.caption("💡 提示：輸入病歷號後三碼後，下載的檔案名稱會自動加入該末三碼。")
 
-    # 輸出為 Excel 位元組
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine="openpyxl") as writer:
-      df_consult.to_excel(writer, index=False, sheet_name="多團隊照會")
-    excel_data = output.getvalue()
+  # 製作成 DataFrame 格式供 Excel 匯出
+  df_consult = pd.DataFrame(
+      {
+          "病歷號後三碼": [suffix_str],
+          "範本項目": [selected_template_key],
+          "照會內容": [edited_content],
+      }
+  )
 
-    # 下載按鈕
-    st.download_button(
-        label=f"💾 點選下載檔案 (末三碼: {suffix_str})",
-        data=excel_data,
-        file_name=f"多團隊照會_末三碼{suffix_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
-        mime=(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ),
-    )
+  # 輸出為 Excel 位元組
+  output = BytesIO()
+  with pd.ExcelWriter(output, engine="openpyxl") as writer:
+    df_consult.to_excel(writer, index=False, sheet_name="多團隊照會")
+  excel_data = output.getvalue()
+
+  # 下載按鈕
+  st.download_button(
+      label=f"📥 下載 Excel 照會檔 (病歷號末三碼: {suffix_str})",
+      data=excel_data,
+      file_name=f"多團隊照會_末三碼{suffix_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+      mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      type="primary",
+  )
