@@ -212,7 +212,7 @@ audit_data = {
     "3. 化療藥物之調配準備": {
         "步驟": [
             "3.1 化療處方審核確認後，將化療標籤貼紙同步貼在點滴及避光袋上。",
-            "3.2 依據處方進行備藥 (His 5 化療處方調劑)。",
+            "3.2 依據處方進行備藥 (His 5 化療處方調劑)",
             (
                 "3.3 以籃子進行區分，門診放置紅籃，住院放置白籃，非當日的住院療程則放置於藍色籃子。"
             ),
@@ -617,7 +617,7 @@ elif page == "📦 醫療物資請領清單":
     st.subheader("📋 盤點(庫存品)產生的清單")
     if selected_records_p1:
       df_p1 = pd.DataFrame(selected_records_p1)
-      st.dataframe(df_p1, use_container_width=True, hide_index=True)
+      st.dataframe(df_p1, use_container_width=True, hide_index=True, height=500)
       get_excel_download_button(df_p1, "盤點_庫存品")
     else:
       st.info("👆 請在上方勾選項目。")
@@ -640,7 +640,7 @@ elif page == "📦 醫療物資請領清單":
     st.subheader("📋 盤點(單一品項)產生的清單")
     if selected_records_p2:
       df_p2 = pd.DataFrame(selected_records_p2)
-      st.dataframe(df_p2, use_container_width=True, hide_index=True)
+      st.dataframe(df_p2, use_container_width=True, hide_index=True, height=500)
       get_excel_download_button(df_p2, "盤點_單一品項")
     else:
       st.info("👆 請在上方勾選項目。")
@@ -663,7 +663,7 @@ elif page == "📦 醫療物資請領清單":
     st.subheader("📋 藥品+點滴+酒精產生的清單")
     if selected_records_p3:
       df_p3 = pd.DataFrame(selected_records_p3)
-      st.dataframe(df_p3, use_container_width=True, hide_index=True)
+      st.dataframe(df_p3, use_container_width=True, hide_index=True, height=500)
       get_excel_download_button(df_p3, "藥品_點滴_酒精")
     else:
       st.info("👆 請在上方勾選項目。")
@@ -682,10 +682,10 @@ elif page == "📦 醫療物資請領清單":
     st.subheader("📋 一般品項產生的清單")
     if selected_records_p4:
       df_p4 = pd.DataFrame(selected_records_p4)
-      st.dataframe(df_p4, use_container_width=True, hide_index=True)
+      st.dataframe(df_p4, use_container_width=True, hide_index=True, height=500)
       get_excel_download_button(df_p4, "一般品項")
     else:
-      st.info("👆請在上方勾選項目。")
+      st.info("👆 請在上方勾選項目。")
 
   # --- 分頁 5：盤點撥補ZZ ---
   with tab5:
@@ -705,7 +705,7 @@ elif page == "📦 醫療物資請領清單":
     st.subheader("📋 盤點撥補ZZ產生的清單")
     if selected_records_p5:
       df_p5 = pd.DataFrame(selected_records_p5)
-      st.dataframe(df_p5, use_container_width=True, hide_index=True)
+      st.dataframe(df_p5, use_container_width=True, hide_index=True, height=500)
       get_excel_download_button(df_p5, "盤點撥補ZZ")
     else:
       st.info("👆 請在上方勾選項目。")
@@ -726,7 +726,8 @@ elif page == "📦 醫療物資請領清單":
 
     if all_selected_records:
       df_all = pd.DataFrame(all_selected_records)
-      st.dataframe(df_all, use_container_width=True, hide_index=True)
+      # 調整高度 (height=600)，讓表格變大、不需要額外下滑捲動就能輕鬆複製
+      st.dataframe(df_all, use_container_width=True, hide_index=True, height=600)
       get_excel_download_button(df_all, "全部勾選總表")
     else:
       st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
