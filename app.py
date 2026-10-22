@@ -691,6 +691,13 @@ elif page == "📦 醫療物資請領清單":
   # --- 分頁 5：盤點撥補ZZ ---
   with tab5:
     st.subheader("🗑️ 盤點撥補ZZ - 勾選區")
+
+    # 新增的操作步驟流程說明
+    st.info(
+        "📌 **操作步驟流程說明：**\n\n"
+        "庫存類表單 ➔ 常備盤點作業 ➔ 搜尋更多 ➔ Z-Z ➔ 庫別輸入541"
+    )
+
     selected_records_p5 = []
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page4):
