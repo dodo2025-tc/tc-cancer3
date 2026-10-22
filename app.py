@@ -185,7 +185,7 @@ audit_data = {
     "1. 準備工作": {
         "步驟": [
             "1.1 關閉 UV 燈開關，開啟無菌無塵操作檯並完成調劑前準備工作。",
-            "1.2 每日登記化療調配室溫濕度、生物操作台數據。",
+            "1.2 每日登記化療調配室溫濕度，生物操作台數據。",
             "1.3 打開化療系統。",
         ],
         "注意事項": (
@@ -237,7 +237,7 @@ audit_data = {
             (
                 "5.2"
                 " 核對藥師進行封包及核發，經由條碼刷取內外袋標籤進行發藥."
-                " 系統自動派送給傳送人員進行運送。(His 5 化療處方發藥)"
+                " 系統自動派送給傳送人員進行運送。(His 5 化療傳送)"
             ),
         ],
         "注意事項": (
@@ -740,8 +740,7 @@ elif page == "📦 醫療物資請領清單":
 elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
   st.markdown(
-      "請輸入病歷號後三碼，選擇對應的照會範本。下載的 Excel"
-      " 內將自動包含您指定的 5 個提醒與留白欄位！"
+      "請輸入病歷號後三碼，選擇照會範本，並可在下方直接貼上或修改相關資料後下載 Excel！"
   )
   st.divider()
 
@@ -850,41 +849,60 @@ elif page == "📑 多團隊照會清單":
       "📂 請選擇需要的照會範本：", list(consult_templates.keys())
   )
 
-  # 3. 內容預覽與編輯區
-  st.subheader("📝 照會內容預覽與微調")
-  edited_content = st.text_area(
-      "您可以直接在下方修改文字內容：",
+  # 3. 網頁上的輸入與貼上欄位
+  st.subheader("📝 資料填寫與貼上區")
+  st.markdown("請直接在下方各欄位中貼上或修改對應的病歷與臨床資料：")
+
+  edited_template = st.text_area(
+      "1. 選擇之照會範本內容",
       value=consult_templates[selected_template_key],
-      height=200,
+      height=150,
+  )
+  input_subjective = st.text_area(
+      "2. 請貼上歷次看診之主觀與客觀描述",
+      placeholder="在此處貼上主觀與客觀描述...",
+      height=100,
+  )
+  input_chemo_drug = st.text_area(
+      "3. 請貼上該次化療藥物清單",
+      placeholder="在此處貼上化療藥物清單...",
+      height=100,
+  )
+  input_lab_report = st.text_area(
+      "4. 請貼上該次血液 or 檢驗相關報告",
+      placeholder="在此處貼上檢驗報告...",
+      height=100,
+  )
+  input_inpatient_med = st.text_area(
+      "5. 請貼上該區間住院用藥", placeholder="在此處貼上住院用藥...", height=100
   )
 
   # 4. 產生 Excel 並提供下載
   suffix_str = chart_no_suffix if chart_no_suffix else "未填"
 
   if not chart_no_suffix:
-    st.caption("💡 提示：輸入病歷號後三碼後，下載的檔案名稱會自動加入該末三碼。")
+    st.warning("💡 提醒：您尚未輸入病歷號後三碼，檔名將以「未填」代替。")
 
-  # 建立包含您要求的 5 個欄位結構的 DataFrame
-  excel_data_rows = [
-      ("病歷號後三碼", suffix_str),
-      ("選定範本項目", selected_template_key),
-      ("1. 選擇之照會範本內容", edited_content),
-      ("2. 請貼上歷次看診之主觀與客觀描述", "[在此處貼上資料]"),
-      ("3. 請貼上該次化療藥物清單", "[在此處貼上資料]"),
-      ("4. 請貼上該次血液or檢驗相關報告", "[在此處貼上資料]"),
-      ("5. 請貼上該區間住院用藥", "[在此處貼上資料]"),
-  ]
+  # 將網頁上填寫的內容組合成 Excel 資料格式（橫向欄位）
+  excel_data_dict = {
+      "病歷號後三碼": [suffix_str],
+      "選定範本項目": [selected_template_key],
+      "1. 照會範本內容": [edited_template],
+      "2. 歷次看診之主觀與客觀描述": [input_subjective],
+      "3. 該次化療藥物清單": [input_chemo_drug],
+      "4. 該次血液or檢驗相關報告": [input_lab_report],
+      "5. 該區間住院用藥": [input_inpatient_med],
+  }
 
-  df_consult = pd.DataFrame(excel_data_rows, columns=["資料欄位項目", "內容 / 留白填寫處"])
-
-  # 預覽表格外觀
-  st.dataframe(df_consult, use_container_width=True, hide_index=True)
+  df_consult = pd.DataFrame(excel_data_dict)
 
   # 輸出為 Excel 位元組
   output = BytesIO()
   with pd.ExcelWriter(output, engine="openpyxl") as writer:
     df_consult.to_excel(writer, index=False, sheet_name="多團隊照會清單")
   excel_data = output.getvalue()
+
+  st.divider()
 
   # 下載按鈕
   st.download_button(
