@@ -185,7 +185,7 @@ audit_data = {
     "1. 準備工作": {
         "步驟": [
             "1.1 關閉 UV 燈開關，開啟無菌無塵操作檯並完成調劑前準備工作。",
-            "1.2 每日登記化療調配室溫濕度，生物操作台數據。",
+            "1.2 每日登記化療調配室溫濕度、生物操作台數據。",
             "1.3 打開化療系統。",
         ],
         "注意事項": (
@@ -237,7 +237,7 @@ audit_data = {
             (
                 "5.2"
                 " 核對藥師進行封包及核發，經由條碼刷取內外袋標籤進行發藥."
-                " 系統自動派送給傳送人員進行運送。(His 5 化療傳送)"
+                " 系統自動派送給傳送人員進行運送。(His 5 化療處方發藥)"
             ),
         ],
         "注意事項": (
@@ -904,11 +904,11 @@ elif page == "📑 多團隊照會清單":
 
   st.divider()
 
-  # 下載按鈕
+  # 下載按鈕 (檔名改為僅帶入末三碼與時間戳記)
   st.download_button(
       label=f"📥 下載 Excel 照會檔 (病歷號末三碼: {suffix_str})",
       data=excel_data,
-      file_name=f"多團隊照會_末三碼{suffix_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+      file_name=f"{suffix_str}_{datetime.now().strftime('%H%M%S')}.xlsx",
       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       type="primary",
   )
