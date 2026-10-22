@@ -560,20 +560,21 @@ elif page == "⚡ 週六單人流程核心":
   if sat_progress == 100:
     st.success("🎉 週六單人流程核心步驟已全部核對完成！")
 
-# 4. 醫療物資請領清單 (完整 5 分頁系統)
+# 4. 醫療物資請領清單 (完整 6 分頁系統)
 elif page == "📦 醫療物資請領清單":
   st.title("📦 醫療物資請領清單登記系統")
   st.write(
       "請在下方各分頁中勾選您需要請領的物品，系統將自動在下方產生完整清單。"
   )
 
-  # 建立 5 個分頁
-  tab1, tab2, tab3, tab4, tab5 = st.tabs([
+  # 建立 6 個分頁
+  tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
       "盤點(庫存品)",
       "盤點(單一品項)",
       "藥品+點滴+酒精",
       "一般品項",
       "盤點撥補ZZ",
+      "全部勾選總表",
   ])
 
   # --- 共用匯出 Excel 函式 ---
@@ -591,17 +592,21 @@ elif page == "📦 醫療物資請領清單":
         ),
     )
 
+  # 初始化各分頁的勾選紀錄列表
+  selected_records_p1 = []
+  selected_records_p2 = []
+  selected_records_p3 = []
+  selected_records_p4 = []
+  selected_records_p5 = []
+
   # --- 分頁 1：盤點(庫存品) ---
   with tab1:
     st.subheader("📦 盤點撥補醫材 (庫存品) - 勾選區")
-
-    # 操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選庫存品 ➔ 新增"
     )
 
-    selected_records_p1 = []
     cols = st.columns(2)
     for i, (source, code, name) in enumerate(items_data_page1_stock):
       with cols[i % 2]:
@@ -620,14 +625,11 @@ elif page == "📦 醫療物資請領清單":
   # --- 分頁 2：盤點(單一品項) ---
   with tab2:
     st.subheader("📦 盤點撥補醫材 (單一品項) - 勾選區")
-
-    # 操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選單一品項 ➔ 新增"
     )
 
-    selected_records_p2 = []
     cols = st.columns(2)
     for i, (source, code, name) in enumerate(items_data_page1_single):
       with cols[i % 2]:
@@ -646,14 +648,11 @@ elif page == "📦 醫療物資請領清單":
   # --- 分頁 3：藥品+點滴+酒精 ---
   with tab3:
     st.subheader("💊 藥品+點滴+酒精 - 勾選區")
-
-    # 新增的操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 調撥領用申請 ➔ 中分類西藥 ➔ 發料庫441 ➔ 請領庫541 ➔ 分機4035 ➔ 新增"
     )
 
-    selected_records_p3 = []
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page2):
       with cols[i % 2]:
@@ -672,7 +671,7 @@ elif page == "📦 醫療物資請領清單":
   # --- 分頁 4：一般品項 ---
   with tab4:
     st.subheader("📄 一般品項 - 勾選區")
-    selected_records_p4 = []
+
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page3):
       with cols[i % 2]:
@@ -686,19 +685,16 @@ elif page == "📦 醫療物資請領清單":
       st.dataframe(df_p4, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p4, "一般品項")
     else:
-      st.info("👆 請在上方勾選項目。")
+      st.info("👆請在上方勾選項目。")
 
   # --- 分頁 5：盤點撥補ZZ ---
   with tab5:
     st.subheader("🗑️ 盤點撥補ZZ - 勾選區")
-
-    # 新增的操作步驟流程說明
     st.info(
         "📌 **操作步驟流程說明：**\n\n"
         "庫存類表單 ➔ 常備盤點作業 ➔ 搜尋更多 ➔ Z-Z ➔ 庫別輸入541"
     )
 
-    selected_records_p5 = []
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page4):
       with cols[i % 2]:
@@ -713,3 +709,24 @@ elif page == "📦 醫療物資請領清單":
       get_excel_download_button(df_p5, "盤點撥補ZZ")
     else:
       st.info("👆 請在上方勾選項目。")
+
+  # --- 分頁 6：全部勾選總表 ---
+  with tab6:
+    st.subheader("📊 全部勾選項目總表")
+    st.markdown("此分頁會自動加總並顯示您在前五個分頁中所勾選的所有項目：")
+
+    # 合併前五個分頁的清單
+    all_selected_records = (
+        selected_records_p1
+        + selected_records_p2
+        + selected_records_p3
+        + selected_records_p4
+        + selected_records_p5
+    )
+
+    if all_selected_records:
+      df_all = pd.DataFrame(all_selected_records)
+      st.dataframe(df_all, use_container_width=True, hide_index=True)
+      get_excel_download_button(df_all, "全部勾選總表")
+    else:
+      st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
