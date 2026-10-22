@@ -740,8 +740,8 @@ elif page == "📦 醫療物資請領清單":
 elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
   st.markdown(
-      "請輸入病歷號後三碼，選擇對應的照會範本，確認或修改內容後即可下載"
-      " Excel 檔案。"
+      "請輸入病歷號後三碼，選擇對應的照會範本。下載的 Excel"
+      " 內將自動包含您指定的 5 個提醒與留白欄位！"
   )
   st.divider()
 
@@ -853,7 +853,7 @@ elif page == "📑 多團隊照會清單":
   # 3. 內容預覽與編輯區
   st.subheader("📝 照會內容預覽與微調")
   edited_content = st.text_area(
-      "您可以直接在下方修改文字內容後再下載：",
+      "您可以直接在下方修改文字內容：",
       value=consult_templates[selected_template_key],
       height=200,
   )
@@ -864,19 +864,26 @@ elif page == "📑 多團隊照會清單":
   if not chart_no_suffix:
     st.caption("💡 提示：輸入病歷號後三碼後，下載的檔案名稱會自動加入該末三碼。")
 
-  # 製作成 DataFrame 格式供 Excel 匯出
-  df_consult = pd.DataFrame(
-      {
-          "病歷號後三碼": [suffix_str],
-          "範本項目": [selected_template_key],
-          "照會內容": [edited_content],
-      }
-  )
+  # 建立包含您要求的 5 個欄位結構的 DataFrame
+  excel_data_rows = [
+      ("病歷號後三碼", suffix_str),
+      ("選定範本項目", selected_template_key),
+      ("1. 選擇之照會範本內容", edited_content),
+      ("2. 請貼上歷次看診之主觀與客觀描述", "[在此處貼上資料]"),
+      ("3. 請貼上該次化療藥物清單", "[在此處貼上資料]"),
+      ("4. 請貼上該次血液or檢驗相關報告", "[在此處貼上資料]"),
+      ("5. 請貼上該區間住院用藥", "[在此處貼上資料]"),
+  ]
+
+  df_consult = pd.DataFrame(excel_data_rows, columns=["資料欄位項目", "內容 / 留白填寫處"])
+
+  # 預覽表格外觀
+  st.dataframe(df_consult, use_container_width=True, hide_index=True)
 
   # 輸出為 Excel 位元組
   output = BytesIO()
   with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    df_consult.to_excel(writer, index=False, sheet_name="多團隊照會")
+    df_consult.to_excel(writer, index=False, sheet_name="多團隊照會清單")
   excel_data = output.getvalue()
 
   # 下載按鈕
