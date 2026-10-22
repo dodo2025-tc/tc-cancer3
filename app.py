@@ -1,8 +1,15 @@
 from datetime import datetime
 from io import BytesIO
-from docx import Document  # 用於生成 Word 文件
 import pandas as pd
 import streamlit as st
+
+# 嘗試匯入 docx，若未安裝則提示安全處理
+try:
+  from docx import Document
+
+  HAS_DOCX = True
+except ImportError:
+  HAS_DOCX = False
 
 # ==========================================
 # 網頁基本設定
@@ -29,7 +36,6 @@ st.markdown(
 with st.sidebar:
   st.title("⚙️ 功能選單")
 
-  # 新增第 5 個「📑 多團隊照會清單」選項
   page = st.radio(
       "請選擇功能單元：",
       [
@@ -238,7 +244,7 @@ audit_data = {
             (
                 "5.2"
                 " 核對藥師進行封包及核發，經由條碼刷取內外袋標籤進行發藥."
-                " 系統自動派送給傳送人員進行運送。(His 5 化療處方發藥)"
+                " 系統自動派送給傳送人員進行運送。(His 5 化療傳送)"
             ),
         ],
         "注意事項": (
@@ -412,7 +418,6 @@ items_data_page4 = [
 # 介面渲染邏輯
 # ==========================================
 
-# 1. SOP 作業流程查檢
 if page == "📋 SOP 作業流程查檢":
   if role == "💊 調配藥師":
     st.title("🏥 藥劑科：化學藥物【調配室】作業流程")
@@ -457,7 +462,6 @@ if page == "📋 SOP 作業流程查檢":
   else:
     st.caption("📄 參考文件：化療藥物審核藥師工作規定 (GTBABC)")
 
-# 2. 平日審核藥師工作事項
 elif page == "📌 平日審核藥師工作事項":
   st.title("📌 審核藥師 工作 Checklist")
   st.markdown("請點開下方各項待辦分類進行勾選核對：")
@@ -526,7 +530,6 @@ elif page == "📌 平日審核藥師工作事項":
     st.checkbox("2. 更新下個月需用表單", key="chk_m_r_2")
     st.checkbox("3. 每月完成 5S 及效期查核 (僅審核藥師執行)", key="chk_m_r_3")
 
-# 3. 週六單人流程核心
 elif page == "⚡ 週六單人流程核心":
   st.title("⚡ 週六單人流程核心")
   st.markdown("請依照步驟依序進行勾選核對：")
@@ -562,14 +565,12 @@ elif page == "⚡ 週六單人流程核心":
   if sat_progress == 100:
     st.success("🎉 週六單人流程核心步驟已全部核對完成！")
 
-# 4. 醫療物資請領清單 (完整 6 分頁系統)
 elif page == "📦 醫療物資請領清單":
   st.title("📦 醫療物資請領清單登記系統")
   st.write(
       "請在下方各分頁中勾選您需要請領的物品，系統將自動在下方產生完整清單。"
   )
 
-  # 建立 6 個分頁
   tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
       "盤點(庫存品)",
       "盤點(單一品項)",
@@ -579,7 +580,6 @@ elif page == "📦 醫療物資請領清單":
       "全部勾選總表",
   ])
 
-  # --- 共用匯出 Excel 函式 ---
   def get_excel_download_button(df, filename_prefix):
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
@@ -594,134 +594,74 @@ elif page == "📦 醫療物資請領清單":
         ),
     )
 
-  # 初始化各分頁的勾選紀錄列表
   selected_records_p1 = []
   selected_records_p2 = []
   selected_records_p3 = []
   selected_records_p4 = []
   selected_records_p5 = []
 
-  # --- 分頁 1：盤點(庫存品) ---
   with tab1:
     st.subheader("📦 盤點撥補醫材 (庫存品) - 勾選區")
-    st.info(
-        "📌 **操作步驟流程說明：**\n\n"
-        "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選庫存品 ➔ 新增"
-    )
-
     cols = st.columns(2)
     for i, (source, code, name) in enumerate(items_data_page1_stock):
       with cols[i % 2]:
         if st.checkbox(name, key=f"p1_stock_{i}"):
           selected_records_p1.append(("盤點撥補醫材", source, code, name))
-
-    st.markdown("---")
-    st.subheader("📋 盤點(庫存品)產生的清單")
     if selected_records_p1:
       df_p1 = pd.DataFrame(selected_records_p1)
-      st.dataframe(df_p1, use_container_width=True, hide_index=True, height=500)
+      st.dataframe(df_p1, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p1, "盤點_庫存品")
-    else:
-      st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 2：盤點(單一品項) ---
   with tab2:
     st.subheader("📦 盤點撥補醫材 (單一品項) - 勾選區")
-    st.info(
-        "📌 **操作步驟流程說明：**\n\n"
-        "庫存類表單 ➔ 常備盤點作業 ➔ 庫別輸入541 ➔ 中分類醫材 ➔ 選單一品項 ➔ 新增"
-    )
-
     cols = st.columns(2)
     for i, (source, code, name) in enumerate(items_data_page1_single):
       with cols[i % 2]:
         if st.checkbox(name, key=f"p1_single_{i}"):
           selected_records_p2.append(("盤點撥補醫材", source, code, name))
-
-    st.markdown("---")
-    st.subheader("📋 盤點(單一品項)產生的清單")
     if selected_records_p2:
       df_p2 = pd.DataFrame(selected_records_p2)
-      st.dataframe(df_p2, use_container_width=True, hide_index=True, height=500)
+      st.dataframe(df_p2, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p2, "盤點_單一品項")
-    else:
-      st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 3：藥品+點滴+酒精 ---
   with tab3:
     st.subheader("💊 藥品+點滴+酒精 - 勾選區")
-    st.info(
-        "📌 **操作步驟流程說明：**\n\n"
-        "庫存類表單 ➔ 調撥領用申請 ➔ 中分類西藥 ➔ 發料庫441 ➔ 請領庫541 ➔ 分機4035 ➔ 新增"
-    )
-
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page2):
       with cols[i % 2]:
         if st.checkbox(name, key=f"p2_item_{i}"):
           selected_records_p3.append((col1_val, col2_val, code, name))
-
-    st.markdown("---")
-    st.subheader("📋 藥品+點滴+酒精產生的清單")
     if selected_records_p3:
       df_p3 = pd.DataFrame(selected_records_p3)
-      st.dataframe(df_p3, use_container_width=True, hide_index=True, height=500)
+      st.dataframe(df_p3, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p3, "藥品_點滴_酒精")
-    else:
-      st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 4：一般品項 ---
   with tab4:
     st.subheader("📄 一般品項 - 勾選區")
-    st.info(
-        "📌 **操作步驟流程說明：**\n\n"
-        "庫存類表單 ➔ 一般品項申請 ➔ 建立 ➔ 庫別541選化療室 ➔ 分機填4035 ➔ 新增"
-    )
-
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page3):
       with cols[i % 2]:
         if st.checkbox(name, key=f"p3_item_{i}"):
           selected_records_p4.append((col1_val, col2_val, code, name))
-
-    st.markdown("---")
-    st.subheader("📋 一般品項產生的清單")
     if selected_records_p4:
       df_p4 = pd.DataFrame(selected_records_p4)
-      st.dataframe(df_p4, use_container_width=True, hide_index=True, height=500)
+      st.dataframe(df_p4, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p4, "一般品項")
-    else:
-      st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 5：盤點撥補ZZ ---
   with tab5:
     st.subheader("🗑️ 盤點撥補ZZ - 勾選區")
-    st.info(
-        "📌 **操作步驟流程說明：**\n\n"
-        "庫存類表單 ➔ 常備盤點作業 ➔ 搜尋更多 ➔ Z-Z ➔ 庫別輸入541"
-    )
-
     cols = st.columns(2)
     for i, (col1_val, col2_val, code, name) in enumerate(items_data_page4):
       with cols[i % 2]:
         if st.checkbox(name, key=f"p4_item_{i}"):
           selected_records_p5.append((col1_val, col2_val, code, name))
-
-    st.markdown("---")
-    st.subheader("📋 盤點撥補ZZ產生的清單")
     if selected_records_p5:
       df_p5 = pd.DataFrame(selected_records_p5)
-      st.dataframe(df_p5, use_container_width=True, hide_index=True, height=500)
+      st.dataframe(df_p5, use_container_width=True, hide_index=True)
       get_excel_download_button(df_p5, "盤點撥補ZZ")
-    else:
-      st.info("👆 請在上方勾選項目。")
 
-  # --- 分頁 6：全部勾選總表 ---
   with tab6:
     st.subheader("📊 全部勾選項目總表")
-    st.markdown("此分頁會自動加總並顯示您在前五個分頁中所勾選的所有項目：")
-
-    # 合併前五個分頁的清單
     all_selected_records = (
         selected_records_p1
         + selected_records_p2
@@ -729,15 +669,12 @@ elif page == "📦 醫療物資請領清單":
         + selected_records_p4
         + selected_records_p5
     )
-
     if all_selected_records:
       df_all = pd.DataFrame(all_selected_records)
       st.dataframe(df_all, use_container_width=True, hide_index=True, height=600)
       get_excel_download_button(df_all, "全部勾選總表")
-    else:
-      st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
 
-# 5. 多團隊照會清單 (新增的第五個功能)
+# 5. 多團隊照會清單
 elif page == "📑 多團隊照會清單":
   st.title("📋 多團隊照會清單產生器")
   st.markdown(
@@ -746,12 +683,10 @@ elif page == "📑 多團隊照會清單":
   )
   st.divider()
 
-  # 1. 輸入病歷號末三碼
   chart_no_suffix = st.text_input(
       "🔑 請輸入病歷號【後三碼】：", max_chars=3, placeholder="例如：123"
   )
 
-  # 2. 12個照會範本字典資料庫
   consult_templates = {
       "1. 營養不良範本": (
           "病人經診斷為Recurrence mouth flood"
@@ -851,35 +786,36 @@ elif page == "📑 多團隊照會清單":
       "📂 請選擇需要的照會範本：", list(consult_templates.keys())
   )
 
-  # 3. 網頁上的輸入與貼上欄位
+  # 3. 網頁上的輸入與貼上欄位 (更新標題名稱)
   st.subheader("📝 資料填寫與貼上區")
   st.markdown("請直接在下方各欄位中貼上或修改對應的病歷與臨床資料：")
 
   edited_template = st.text_area(
-      "1. 選擇之照會範本內容",
+      "1. 我是範本我是範本",
       value=consult_templates[selected_template_key],
       height=150,
   )
   input_subjective = st.text_area(
-      "2. 請貼上歷次看診之主觀與客觀描述",
+      "2. 請貼上歷次看診之主觀與客觀描述 (我是此次照會對象)",
       placeholder="在此處貼上主觀與客觀描述...",
       height=100,
   )
   input_chemo_drug = st.text_area(
-      "3. 請貼上該次化療藥物清單",
+      "3. 請貼上該次化療藥物清單 (我是此次照會對象)",
       placeholder="在此處貼上化療藥物清單...",
       height=100,
   )
   input_lab_report = st.text_area(
-      "4. 請貼上該次血液 or 檢驗相關報告",
+      "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象)",
       placeholder="在此處貼上檢驗報告...",
       height=100,
   )
   input_inpatient_med = st.text_area(
-      "5. 請貼上該區間住院用藥", placeholder="在此處貼上住院用藥...", height=100
+      "5. 請貼上該區間住院用藥 (我是此次照會對象)",
+      placeholder="在此處貼上住院用藥...",
+      height=100,
   )
 
-  # 4. 準備檔名用的末三碼
   suffix_str = chart_no_suffix if chart_no_suffix else "未填"
 
   if not chart_no_suffix:
@@ -887,23 +823,21 @@ elif page == "📑 多團隊照會清單":
 
   st.divider()
 
-  # 建立橫向多欄位的 DataFrame (確保每一欄都有獨立的標題與內容清單)
-  df_consult = pd.DataFrame(
-      {
-          "病歷號後三碼": [suffix_str],
-          "選定範本項目": [selected_template_key],
-          "1. 照會範本內容": [edited_template],
-          "2. 歷次看診之主觀與客觀描述": [input_subjective],
-          "3. 該次化療藥物清單": [input_chemo_drug],
-          "4. 該次血液or檢驗相關報告": [input_lab_report],
-          "5. 該區間住院用藥": [input_inpatient_med],
-      }
-  )
+  # 橫向資料表
+  df_consult = pd.DataFrame({
+      "病歷號後三碼": [suffix_str],
+      "選定範本項目": [selected_template_key],
+      "1. 我是範本我是範本": [edited_template],
+      "2. 歷次看診之主觀與客觀描述 (我是此次照會對象)": [input_subjective],
+      "3. 該次化療藥物清單 (我是此次照會對象)": [input_chemo_drug],
+      "4. 該次血液or檢驗相關報告 (我是此次照會對象)": [input_lab_report],
+      "5. 該區間住院用藥 (我是此次照會對象)": [input_inpatient_med],
+  })
 
   # 預覽表格外觀
   st.dataframe(df_consult, use_container_width=True, hide_index=True)
 
-  # --- A. 產生 Excel 下載按鈕 ---
+  # --- A. 產生 Excel 下載 ---
   excel_output = BytesIO()
   with pd.ExcelWriter(excel_output, engine="openpyxl") as writer:
     df_consult.to_excel(writer, index=False, sheet_name="多團隊照會清單")
@@ -917,30 +851,40 @@ elif page == "📑 多團隊照會清單":
       type="primary",
   )
 
-  # --- B. 產生 Word 下載按鈕 ---
-  doc = Document()
-  doc.add_heading(f"多團隊照會清單 (病歷號末三碼: {suffix_str})", level=1)
-  doc.add_paragraph(f"選定範本項目: {selected_template_key}")
-  doc.add_heading("1. 照會範本內容", level=2)
-  doc.add_paragraph(edited_template)
-  doc.add_heading("2. 歷次看診之主觀與客觀描述", level=2)
-  doc.add_paragraph(input_subjective)
-  doc.add_heading("3. 該次化療藥物清單", level=2)
-  doc.add_paragraph(input_chemo_drug)
-  doc.add_heading("4. 該次血液or檢驗相關報告", level=2)
-  doc.add_paragraph(input_lab_report)
-  doc.add_heading("5. 該區間住院用藥", level=2)
-  doc.add_paragraph(input_inpatient_med)
+  # --- B. 產生 Word 下載 (完整涵蓋所有 5 個欄位資料) ---
+  if HAS_DOCX:
+    doc = Document()
+    doc.add_heading(f"多團隊照會清單 (病歷號末三碼: {suffix_str})", level=1)
+    doc.add_paragraph(f"選定範本項目: {selected_template_key}")
 
-  word_output = BytesIO()
-  doc.save(word_output)
-  word_data = word_output.getvalue()
+    doc.add_heading("1. 我是範本我是範本", level=2)
+    doc.add_paragraph(edited_template if edited_template else "（無內容）")
 
-  st.download_button(
-      label=f"📥 下載 Word 照會檔 ({suffix_str}.docx)",
-      data=word_data,
-      file_name=f"{suffix_str}.docx",
-      mime=(
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-      ),
-  )
+    doc.add_heading("2. 歷次看診之主觀與客觀描述 (我是此次照會對象)", level=2)
+    doc.add_paragraph(input_subjective if input_subjective else "（無內容）")
+
+    doc.add_heading("3. 該次化療藥物清單 (我是此次照會對象)", level=2)
+    doc.add_paragraph(input_chemo_drug if input_chemo_drug else "（無內容）")
+
+    doc.add_heading("4. 該次血液or檢驗相關報告 (我是此次照會對象)", level=2)
+    doc.add_paragraph(input_lab_report if input_lab_report else "（無內容）")
+
+    doc.add_heading("5. 該區間住院用藥 (我是此次照會對象)", level=2)
+    doc.add_paragraph(input_inpatient_med if input_inpatient_med else "（無內容）")
+
+    word_output = BytesIO()
+    doc.save(word_output)
+    word_data = word_output.getvalue()
+
+    st.download_button(
+        label=f"📥 下載 Word 照會檔 ({suffix_str}.docx)",
+        data=word_data,
+        file_name=f"{suffix_str}.docx",
+        mime=(
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ),
+    )
+  else:
+    st.info(
+        "💡 提示：若需下載 Word 檔，請在 requirements.txt 中新增 python-docx"
+    )
