@@ -18,12 +18,20 @@ st.set_page_config(
     page_title="化療藥物作業流程與物資請領系統", layout="centered", page_icon="🏥"
 )
 
-# --- CSS 樣式優化 ---
+# --- CSS 樣式優化 (包含將說明文字改為黑體加粗的樣式) ---
 st.markdown(
     """
     <style>
     .stProgress > div > div > div > div {
         background-color: #4CAF50;
+    }
+    /* 讓指定的說明文字加黑、加粗、不使用灰色 */
+    .custom-bold-caption {
+        font-weight: bold;
+        color: #000000;
+        font-size: 0.95rem;
+        margin-top: -5px;
+        margin-bottom: 10px;
     }
     </style>
     """,
@@ -244,7 +252,7 @@ audit_data = {
             (
                 "5.2"
                 " 核對藥師進行封包及核發，經由條碼刷取內外袋標籤進行發藥."
-                " 系統自動派送給傳送人員進行運送。(His 5 化療傳送)"
+                " 系統自動派送給傳送人員進行運送。(His 5 化療處方發藥)"
             ),
         ],
         "注意事項": (
@@ -505,26 +513,42 @@ elif page == "📌 平日審核藥師工作事項":
 
   with st.expander("📅 每月完成事項 (電子檔 - 3號前交宛怡)"):
     st.checkbox("115年化療處方near miss.xls", key="chk_m_e_1")
-    st.caption("↳ 放在每月所需，家榮檔案夾也有副本")
+    st.markdown(
+        '<div class="custom-bold-caption">↳ 放在每月所需，家榮檔案夾也有副本</div>',
+        unsafe_allow_html=True,
+    )
 
     st.checkbox("115年化療各時段處方量統計.xls", key="chk_m_e_2")
-    st.caption("↳ 每天都在做，捷徑(shortcut)在桌面")
+    st.markdown(
+        '<div class="custom-bold-caption">↳ 每天都在做，捷徑(shortcut)在桌面</div>',
+        unsafe_allow_html=True,
+    )
 
     st.checkbox(
         "11509化療調配支援紀錄表.pdf (紙本帶去臨床辦公室掃描)", key="chk_m_e_4"
     )
 
     st.checkbox("115年第四季(10-12)化療室統計資料.pdf", key="chk_m_e_5")
-    st.caption("↳ 家榮的檔案夾有可以編輯的部分")
+    st.markdown(
+        '<div class="custom-bold-caption">↳ 家榮的檔案夾有可以編輯的部分</div>',
+        unsafe_allow_html=True,
+    )
 
     st.checkbox('1150901-1150931業務量.xls "當月"業務量', key="chk_m_e_3")
-    st.caption(
-        "↳"
-        " 最後一日用系統路徑：報表 ➔ 化療業務量 ➔ 設定日期 1-30 或 31 撈出"
+    st.markdown(
+        '<div class="custom-bold-caption">↳ 最後一日用系統路徑：報表 ➔'
+        " 化療業務量 ➔ 設定日期 1-30 或 31 撈出</div>",
+        unsafe_allow_html=True,
     )
 
     st.checkbox("115年化療調劑總筆數.xls", key="chk_m_e_6")
-    st.caption('↳ 從上述「"當月"業務量」撈出資料')
+    st.markdown(
+        '<div class="custom-bold-caption">↳'
+        ' 從上述「"當月"業務量」撈出資料<br>步驟：<br>1.選取excel所有標題列(包含"來源""調劑日期"等等...通常為第二or第三欄位全部)<br>2.點取上方'
+        ' "資料(D)"<br>3.點取"更多篩選"<br>4.點選"標準篩選"<br>5.選取"來源" "=" "O" "和" "狀態"'
+        ' "不包含" "DC"<br>6.貼 O 到門診<br>7.來源選 "I" 到住院，一樣不包含 DC</div>',
+        unsafe_allow_html=True,
+    )
 
   with st.expander("📄 每月完成事項 (紙本 - 月底最後一天交宛怡)"):
     st.checkbox("1. 溫濕度記錄表、壓差記錄表", key="chk_m_p_1")
