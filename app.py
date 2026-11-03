@@ -558,9 +558,7 @@ elif page == "📌 平日審核藥師工作事項":
     st.checkbox("5. 交班本", key="chk_m_p_5")
     st.checkbox("6. 盤點表、盤點報告、大德捐 (最晚最後一週週五交出)", key="chk_m_p_6")
     st.checkbox("7. PCA 報廢單 (to 雅蓁)", key="chk_m_p_7")
-    st.checkbox(
-        "8. (品質促進監測指標)落菌試驗結果", key="chk_m_p_8"
-    )
+    st.checkbox("8. (品質促進監測指標)落菌試驗結果", key="chk_m_p_8")
     st.markdown(
         '<div class="custom-bold-caption">↳ 步驟說明：<br>1. 打開 NOTES<br>2. 入口處<br>3.'
         " 承辦單位選：檢驗科<br>4. 點選「台中醫材滅菌抽檢結果」<br>5. 點兩下打開<br>6."
@@ -907,7 +905,7 @@ elif page == "📑 多團隊照會清單":
       height=100,
   )
   input_inpatient_med = st.text_area(
-      "5. 請貼上該區間住院用藥 (我是此次照會對象)",
+      "5. 請貼上該區間住院用藥 (我是此次照會對象)(用藥有重複重疊是因為區間多天使用)",
       placeholder="在此處貼上住院用藥...",
       height=100,
   )
@@ -936,7 +934,9 @@ elif page == "📑 多團隊照會清單":
           "4. 請貼上該次血液or檢驗相關報告 (我是此次照會對象) "
           "[路徑: 彙整病例->檢驗->最近兩期血液血球檢查打勾->複製到剪貼簿]"
       ): [input_lab_report],
-      "5. 請貼上該區間住院用藥 (我是此次照會對象)": [input_inpatient_med],
+      "5. 請貼上該區間住院用藥 (我是此次照會對象)(用藥有重複重疊是因為區間多天使用)": [
+          input_inpatient_med
+      ],
   })
 
   # 預覽表格外觀
@@ -987,7 +987,9 @@ elif page == "📑 多團隊照會清單":
     doc.add_paragraph(input_lab_report if input_lab_report else "（無內容）")
 
     doc.add_heading(
-        "5. 請貼上該區間住院用藥 (我是此次照會對象)", level=2
+        "5. 請貼上該區間住院用藥"
+        " (我是此次照會對象)(用藥有重複重疊是因為區間多天使用)",
+        level=2,
     )
     doc.add_paragraph(input_inpatient_med if input_inpatient_med else "（無內容）")
 
