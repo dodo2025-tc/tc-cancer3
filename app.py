@@ -558,6 +558,16 @@ elif page == "📌 平日審核藥師工作事項":
     st.checkbox("5. 交班本", key="chk_m_p_5")
     st.checkbox("6. 盤點表、盤點報告、大德捐 (最晚最後一週週五交出)", key="chk_m_p_6")
     st.checkbox("7. PCA 報廢單 (to 雅蓁)", key="chk_m_p_7")
+    st.checkbox(
+        "8. (品質促進監測指標)落菌試驗結果", key="chk_m_p_8"
+    )
+    st.markdown(
+        '<div class="custom-bold-caption">↳ 步驟說明：<br>1. 打開 NOTES<br>2. 入口處<br>3.'
+        " 承辦單位選：檢驗科<br>4. 點選「台中醫材滅菌抽檢結果」<br>5. 點兩下打開<br>6."
+        " 找最近檢驗日期<br>7. 打開桌面：每月所需<br>8. 打開品質指標<br>9. 打開 115"
+        " 年<br>10. 填入 66 就會出現 100%</div>",
+        unsafe_allow_html=True,
+    )
 
   with st.expander("🔄 每月例行公事"):
     st.checkbox("1. 處方箋、注射卡歸檔滿了箱交藥庫", key="chk_m_r_1")
