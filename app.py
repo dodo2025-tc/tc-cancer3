@@ -791,7 +791,7 @@ elif page == "📑 多團隊照會清單":
       ),
       "3. 血小板低下範本": (
           "病人經診斷為Bladder"
-          " cancer，且於2024/07/01用Paclitaxel治療，病人於2024/07/16追蹤時發現有血小板低下[G3：25000-50000/mm3]的症狀，醫師評估後懷疑為藥品所造成之不良反應，故輸血LPRBC"
+          " cancer，cT3bN3M1 stage IV，且於2024/07/01用Paclitaxel治療，病人於2024/07/16追蹤時發現有血小板低下[G3：25000-50000/mm3]的症狀，醫師評估後懷疑為藥品所造成之不良反應，故輸血LPRBC"
           " 2units (2024/07/16)治療,2024/07/22的Lab"
           " data:PLT:397*10^3/uL不良反應症狀消失。\n依據Micromedex，Paclitaxel：thrombocytopenia"
           " , Any grade (4% to 68% )"
