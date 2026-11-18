@@ -613,13 +613,14 @@ elif page == "📦 醫療物資請領清單":
       "請在下方各分頁中勾選您需要請領的物品，系統將自動在下方產生完整清單。"
   )
 
-  tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+  tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
       "盤點(庫存品)",
       "盤點(單一品項)",
       "藥品+點滴+酒精",
       "一般品項",
       "盤點撥補ZZ",
       "全部勾選總表",
+      "📋 常用申請原因複製",
   ])
 
   def get_excel_download_button(df, filename_prefix):
@@ -758,6 +759,16 @@ elif page == "📦 醫療物資請領清單":
       get_excel_download_button(df_all, "全部勾選總表")
     else:
       st.info("👆 目前尚未在任何分頁中勾選項目，請先至前五個分頁進行勾選。")
+
+  with tab7:
+    st.subheader("📋 常用申請原因 / 複製區")
+    st.markdown("點擊下方文字框右上角的 **複製圖示**，即可一鍵複製整段文字貼至系統：")
+    st.code("因化療作業原因所需 ，申請調撥領用", language=None)
+    st.text_input(
+        "或直接全選下方文字複製：",
+        value="因化療作業原因所需 ，申請調撥領用",
+        key="copy_reason_text",
+    )
 
 # 5. 多團隊照會清單
 elif page == "📑 多團隊照會清單":
